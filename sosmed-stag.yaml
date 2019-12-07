@@ -1,0 +1,66 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+ name: staging
+ labels:
+   name: staging
+
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  namespace: staging
+  name: sosmed-stag
+  labels:
+    app: sosmed-stag
+spec:
+  selector:
+    matchLabels:
+      app: sosmed-stag
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: sosmed-stag
+        tier: frontend
+    spec:
+      containers:
+      - image : andronix01/hexasosmed-stag:BUILD_NUMBER
+        name: hexasosmed-stag
+        ports:
+        - containerPort: 80
+          name: sosmed-stag
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: staging
+  name: sosmed-stag-svc
+  labels:
+    app: sosmed-stag
+spec:
+  selector:
+    app: sosmed-stag
+    tier: frontend
+  ports:
+  - port: 80
+  type: LoadBalancer
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: staging
+  name: sosmed-stag-pvc
+  labels:
+    app: sosmed-stag
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+
